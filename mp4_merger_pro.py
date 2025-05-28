@@ -265,7 +265,7 @@ class App(TkinterDnD.Tk):
         dropped = self.tk.splitlist(event.data)
         added = 0
         for path in dropped:
-            if os.path.isfile(path) and path.lower().endswith((".mp4", ".mov", ".avi", ".mkv")):
+            if os.path.isfile(path) and path.lower().endswith((".mp4", ".mov", ".avi", ".mkv", ".webm")):  # เพิ่ม .webm ที่นี่
                 if path not in self.selected_files:
                     self.selected_files.append(path)
                     added += 1
@@ -273,7 +273,7 @@ class App(TkinterDnD.Tk):
             self.update_file_list()
 
     def select_videos(self):
-        files = filedialog.askopenfilenames(filetypes=[("Video files", "*.mp4 *.mov *.avi *.mkv")])
+        files = filedialog.askopenfilenames(filetypes=[("Video files", "*.mp4 *.mov *.avi *.mkv *.webm")])  # เพิ่ม .webm ที่นี่
         if files:
             added = 0
             for f in files:
@@ -456,7 +456,6 @@ class App(TkinterDnD.Tk):
 
             # เพิ่ม codec และ option ตามโหมด
             if mode == "GPU+CPU":
-                # ใช้ทั้ง GPU encoder และ multi-thread CPU 100%
                 cpu_count = multiprocessing.cpu_count()
                 threads_to_use = max(1, int(cpu_count * 1.0))
                 cmd += ["vcodec=h264_nvenc", "acodec=aac", "-threads", str(threads_to_use)]
