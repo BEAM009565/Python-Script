@@ -292,7 +292,7 @@ class App(TkinterDnD.Tk):
 
         # ฟังก์ชันช่วยในการดึงตัวเลขตอนจากชื่อไฟล์
         def extract_episode_number(filename):
-            match = re.search(r"(\d+)(?:-(\d+))?", filename)
+            match = re.search(r"ตอนที่ (\d+)(?:-(\d+))?", filename)
             if match:
                 start = int(match.group(1))
                 end = int(match.group(2)) if match.group(2) else start
@@ -545,6 +545,8 @@ class App(TkinterDnD.Tk):
             messagebox.showinfo("ไม่มีข้อมูล", "ยังไม่มีไฟล์ในรายการ")
             return
 
+        import re  # เพิ่มการนำเข้า re
+
         def format_time(seconds):
             seconds = int(seconds)
             h = seconds // 3600
@@ -557,15 +559,23 @@ class App(TkinterDnD.Tk):
 
         lines = []
         current_time = 0.0
-        for idx, dur in enumerate(self.video_durations, start=1):
+        last_episode = 0
+
+        for idx, (file, dur) in enumerate(zip(self.selected_files, self.video_durations), start=1):
             start_str = format_time(current_time)
-            lines.append(f"{start_str} ตอนที่ {idx}")
+            match = re.search(r"(\d+)(?:-(\d+))?", os.path.basename(file))
+            if match:
+                episode_range = match.group(0)  # ดึงช่วงตัวเลข เช่น "1-2"
+                last_episode = int(match.group(2)) if match.group(2) else int(match.group(1))
+                lines.append(f"{start_str} ตอนที่ {episode_range}")
+            else:
+                last_episode = idx
+                lines.append(f"{start_str} ตอนที่ {idx}")
             current_time += dur
 
         lines.append("")
-        last_start_str = format_time(current_time - self.video_durations[-1])
-        last_idx = len(self.video_durations)
-        lines.append(f"{last_start_str} ตอนใหม่ล่าสุด {last_idx}")
+        last_start_str = format_time(current_time - dur)  # Adjust to use the start time of the last episode
+        lines.append(f"{last_start_str} ตอนใหม่ล่าสุด {episode_range}")
 
         summary = "\n".join(lines)
 
