@@ -285,9 +285,22 @@ class App(TkinterDnD.Tk):
 
     def update_file_list(self):
         import moviepy.editor as mp
+        import re
 
         self.video_durations.clear()
         self.tree.delete(*self.tree.get_children())
+
+        # ฟังก์ชันช่วยในการดึงตัวเลขตอนจากชื่อไฟล์
+        def extract_episode_number(filename):
+            match = re.search(r"(\d+)(?:-(\d+))?", filename)
+            if match:
+                start = int(match.group(1))
+                end = int(match.group(2)) if match.group(2) else start
+                return start, end
+            return float('inf'), float('inf')  # ถ้าไม่มีตัวเลข ให้เรียงไว้ท้ายสุด
+
+        # เรียงลำดับไฟล์ตามตัวเลขตอน
+        self.selected_files.sort(key=lambda x: extract_episode_number(os.path.basename(x)))
 
         for idx, f in enumerate(self.selected_files, start=1):
             try:
